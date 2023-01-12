@@ -32,6 +32,9 @@ setuptools.setup(
 		'Topic :: Utilities',
 	],
 	keywords = 'env environ environmental_variables',
+	install_requires = [
+		'simplifiedapp',
+	],
 	python_requires = '>=3.7',
 	packages = setuptools.find_packages(),
 	
