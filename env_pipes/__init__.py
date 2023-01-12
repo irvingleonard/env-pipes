@@ -12,7 +12,7 @@ import shlex
 
 import simplifiedapp
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,14 +40,15 @@ def _unpack_path(tree_node, parent_path):
 	if not isinstance(tree_node, dict):
 		raise ValueError('Malformed path pack')
 
+	result = []
 	for name, content in tree_node.items():
 		content_path = parent_path / name
 		if isinstance(content, str):
 			content_path.write_bytes(base64.b64decode(content))
-			result = [content_path]
+			result.append(content_path)
 		elif isinstance(content, dict):
 			content_path.mkdir()
-			result = [content_path]
+			result.append(content_path)
 			result += _unpack_path(content, content_path)
 		else:
 			raise ValueError('Malformed path pack')
