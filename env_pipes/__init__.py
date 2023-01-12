@@ -12,7 +12,7 @@ import shlex
 
 import simplifiedapp
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 LOGGER = logging.getLogger(__name__)
 
