@@ -12,7 +12,7 @@ import shlex
 
 import simplifiedapp
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ def _pack_path(path_to_pack):
 
 	return result
 
-def _unpack_path(tree_node, parent_path):
+def _unpack_path(tree_node, parent_path, overwrite_files = False):
 	'''Unpacks a path recursively
 	Writes the content of the encoded file or creates a directory and calls itself for each child.
 	'''
@@ -44,12 +44,15 @@ def _unpack_path(tree_node, parent_path):
 	for name, content in tree_node.items():
 		content_path = parent_path / name
 		if isinstance(content, str):
-			content_path.write_bytes(base64.b64decode(content))
-			result.append(content_path)
+			if content_path.exists() and not overwrite_files:
+				raise FileExistsError(str(content_path))
+			else:
+				content_path.write_bytes(base64.b64decode(content))
+				result.append(content_path)
 		elif isinstance(content, dict):
-			content_path.mkdir()
+			content_path.mkdir(exist_ok = True)
 			result.append(content_path)
-			result += _unpack_path(content, content_path)
+			result += _unpack_path(content, content_path, overwrite_files)
 		else:
 			raise ValueError('Malformed path pack')
 
@@ -86,7 +89,7 @@ class EnvironmentalPipes:
 		return result
 
 	@staticmethod
-	def unpack_path(destination, content_file, create_destination = False, base64_decode = False):
+	def unpack_path(destination, content_file, create_destination = False, overwrite_files = False, base64_decode = False):
 		'''Unpack JSON content into a directory
 		Unpacks a JSON object created with "pack_path" into a directory
 		'''
@@ -118,7 +121,7 @@ class EnvironmentalPipes:
 				raise RuntimeError('An error ocurred while reading the content file')
 
 		content = json.loads(content)
-		result = _unpack_path(content, destination_path)
+		result = _unpack_path(content, destination_path, overwrite_files)
 
 		return result
 
